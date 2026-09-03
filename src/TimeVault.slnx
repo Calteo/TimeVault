@@ -1,1 +1,3 @@
-<Solution />
+<Solution>
+  <Project Path="TimeVault/TimeVault.csproj" />
+</Solution>

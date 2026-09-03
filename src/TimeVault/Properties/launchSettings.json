@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "TimeVault": {
+      "commandName": "Project"
+    },
+    "Show": {
+      "commandName": "Project",
+      "commandLineArgs": "-show"
+    }
+  }
+}

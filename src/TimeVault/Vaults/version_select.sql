@@ -1,0 +1,4 @@
+SELECT * 
+FROM Version 
+ORDER BY Id DESC
+LIMIT 1

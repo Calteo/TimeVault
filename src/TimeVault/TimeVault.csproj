@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>Forms\Icons\archive-icon-icon-6.ico</ApplicationIcon>    
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Vaults\vault_create.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Forms\Icons\archive-icon-icon-6.ico" />
+    <EmbeddedResource Include="Vaults\version_select.sql" />
+    <EmbeddedResource Include="Vaults\version_insert.sql" />
+    <EmbeddedResource Include="Vaults\vault_create.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.79" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
+    <PackageReference Include="Toolbox.CommandLine" Version="1.1.13" />
+    <PackageReference Include="Toolbox.Core" Version="0.6.30" />
+    <PackageReference Include="Toolbox.Forms" Version="0.2.11" />
+    <PackageReference Include="Toolbox.Settings" Version="0.1.1" />
+  </ItemGroup>
+
+</Project>

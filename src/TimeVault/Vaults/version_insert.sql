@@ -1,0 +1,1 @@
+INSERT INTO Version (Id, CreateAt, Comment) VALUES (@Id, @CreateAt, @Comment)
