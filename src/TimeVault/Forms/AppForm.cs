@@ -25,6 +25,7 @@ namespace TimeVault.Forms
 			if (folderBrowserDialog.ShowDialog(this) == DialogResult.OK)
 			{
 				var vault = new Vault(folderBrowserDialog.SelectedPath);
+
 				Vaults.Add(vault);
 				Setting.Vaults.Add(vault.Folder);
 				Setting.Save();

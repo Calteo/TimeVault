@@ -1,4 +1,6 @@
-﻿using Toolbox.Forms;
+﻿using TimeVault.Access;
+using Toolbox.Configuration;
+using Toolbox.Forms;
 
 namespace TimeVault.Vaults;
 
@@ -9,11 +11,13 @@ internal class Vault
 {
 	public string Folder { get; }
 	public WorkerPool Pool { get; } = new WorkerPool();
-	private Database Database { get; }
+	private VaultDatabase Database { get; }
+	public ConfigurationTree<VaultConfiguration> Configurations { get; } = new();
 
 	public Vault(string folder)
 	{
 		Folder = folder;
-		Database = new Database(folder);
+		Database = new VaultDatabase(folder);
+		Database.Open();
 	}
 }
