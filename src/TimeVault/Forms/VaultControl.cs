@@ -33,5 +33,17 @@ namespace TimeVault.Forms
 
 			labelFolder.Text = Vault.Folder;
 		}
+
+		private void ButtonFoldersClick(object sender, EventArgs e)
+		{
+			var form = new FolderSelectionForm { Vault = Vault };
+			form.ShowDialog(this);
+		}
+
+		private void ButtonExcludeClick(object sender, EventArgs e)
+		{
+			var form = new ExclusionForm { Vault = Vault };
+			form.ShowDialog(this);
+		}
 	}
 }

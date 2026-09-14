@@ -1,4 +1,5 @@
 ﻿using TimeVault.Access;
+using TimeVault.Access.Tables;
 using Toolbox.Configuration;
 using Toolbox.Forms;
 
@@ -20,4 +21,6 @@ internal class Vault
 		Database = new VaultDatabase(folder);
 		Database.Open();
 	}
+
+	public ExclusionTable Exclusions => Database.Exclusions;
 }

@@ -19,12 +19,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.79" />
+    <PackageReference Include="Dapper" Version="2.1.86" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
     <PackageReference Include="Toolbox.CommandLine" Version="1.1.13" />
     <PackageReference Include="Toolbox.Configuration" Version="0.1.2" />
     <PackageReference Include="Toolbox.Core" Version="0.6.31" />
-    <PackageReference Include="Toolbox.Dapper.SQLite" Version="0.1.2" />
+    <PackageReference Include="Toolbox.Dapper.SQLite" Version="0.1.17" />
     <PackageReference Include="Toolbox.Forms" Version="0.2.11" />
     <PackageReference Include="Toolbox.Settings" Version="0.1.1" />
   </ItemGroup>
