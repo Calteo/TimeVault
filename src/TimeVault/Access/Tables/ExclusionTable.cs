@@ -1,10 +1,9 @@
-﻿using System.Transactions;
-using TimeVault.Access.Models;
+﻿using TimeVault.Access.Models;
 using Toolbox.Dapper.SQLite;
 
 namespace TimeVault.Access.Tables
 {
-	internal class ExclusionTable() : DatabaseTable<Exclusion>("Exclusion")
+	internal class ExclusionTable() : DatabaseTable<VaultDatabase, Exclusion>("Exclusion")
 	{
 		/// <summary>
 		/// Insert patterns
@@ -36,13 +35,26 @@ namespace TimeVault.Access.Tables
 		private List<Exclusion> _fileExclusions = [];
 		private List<Exclusion> _directoryExclusions = [];
 
-		private List<Exclusion> Fetch(List<Exclusion> returnValue)
+		private void Fetch()
 		{
-			if (_fetched) return returnValue;
+			if (_fetched) return;
 
 			_exclusions.AddRange(Select()); // fetch all database entries
 			_directoryExclusions.AddRange(_exclusions.Where(e => e.IsDirectory));
 			_fileExclusions.AddRange(_exclusions.Where(e => !e.IsDirectory));
+
+			var vaultExclusion = new Exclusion { IsDirectory = true, Pattern = Database.Folder };
+			_exclusions.Add(vaultExclusion);
+			_directoryExclusions.Add(vaultExclusion);
+
+			_fetched = true;
+		}
+
+		private List<Exclusion> Fetch(List<Exclusion> returnValue)
+		{
+			if (_fetched) return returnValue;
+
+			Fetch(returnValue);	
 
 			return returnValue;
 		}
@@ -70,6 +82,13 @@ namespace TimeVault.Access.Tables
 			_fileExclusions.Clear();
 			_directoryExclusions.Clear();
 			_fetched = false;
+		}
+
+		internal bool IsExcluded(DirectoryInfo folder)
+		{
+			Fetch();
+			// return _directoryExclusions.Any(e => e.Matches());
+			return false;
 		}
 
 		public IEnumerable<Exclusion> Exclusions => Fetch(_exclusions);

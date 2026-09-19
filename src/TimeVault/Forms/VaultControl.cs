@@ -36,8 +36,12 @@ namespace TimeVault.Forms
 
 		private void ButtonFoldersClick(object sender, EventArgs e)
 		{
-			var form = new FolderSelectionForm { Vault = Vault };
+			Cursor = Cursors.WaitCursor;
+			var form = new SelectionForm { Vault = Vault };
 			form.ShowDialog(this);
+			ParentForm?.UseWaitCursor = false;
+			Cursor = Cursors.Default;
+
 		}
 
 		private void ButtonExcludeClick(object sender, EventArgs e)

@@ -23,4 +23,5 @@ internal class Vault
 	}
 
 	public ExclusionTable Exclusions => Database.Exclusions;
+	public SelectionTable Selections => Database.Selections;
 }

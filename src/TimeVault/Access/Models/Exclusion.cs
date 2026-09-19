@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Toolbox.Dapper.SQLite;
 using Toolbox.Dapper.SQLite.Attributes;
 
 namespace TimeVault.Access.Models
 {
-	internal class Exclusion : DatabaseModel, IDataErrorInfo
+	internal partial class Exclusion : DatabaseModel, IDataErrorInfo
 	{
 		#region IsDirectory
 		private bool _isDirectory;
@@ -16,10 +16,15 @@ namespace TimeVault.Access.Models
 		public bool IsDirectory
 		{
 			get => _isDirectory;
-			set => SetField(ref _isDirectory, value);
+			set
+			{
+				if (SetField(ref _isDirectory, value)) return;
+				CreateRegex();
+			}
 		}
 		#endregion
 		#region Pattern
+		private string _patternError = "";
 		private string _pattern = "";
 		/// <summary>
 		/// Pattern to exclude.
@@ -30,7 +35,69 @@ namespace TimeVault.Access.Models
 		public string Pattern
 		{
 			get => _pattern;
-			set => SetField(ref _pattern, value);
+			set
+			{
+				if (SetField(ref _pattern, value)) return;
+				CreateRegex();
+			}
+		}
+		#endregion
+
+		private Regex? _regex;
+		[DbIgnore]
+		public Regex Regex => _regex!;
+
+		[GeneratedRegex(@"(?<two>\*\*)|(?<one>\*)|(?<single>\?)|(?<escape>[$()\[\].\\])")]
+		private static partial Regex DirectoryReplacement();
+		[GeneratedRegex(@"(?<one>\*)|(?<single>\?)|(?<escape>[$()\[\].])|(?<validate>.)")]
+		private static partial Regex FileReplacement();
+
+		private void CreateRegex()
+		{
+			if (Pattern.Length==0)
+			{
+				_pattern = "Pattern must contain value.";
+				_regex = null;
+				return;
+			}
+
+			try
+			{
+				var regexPattern = IsDirectory
+					? DirectoryReplacement().Replace(Pattern, ReplaceDirectoryPattern) + @"(\\.*)?"
+					: FileReplacement().Replace(Pattern, ReplaceFilePattern);
+
+				_regex = new Regex(regexPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+				_patternError = "";
+			}
+			catch (Exception exception)
+			{
+				_patternError = exception.Message;
+			}
+		}
+
+		private string ReplaceFilePattern(Match match)
+		{
+			if (match.Groups["escape"].Success) return @"\" + match.Value;
+			if (match.Groups["one"].Success) return @"[^\\]*";
+			if (match.Groups["single"].Success) return @"[^\\]";
+			if (match.Groups["validate"].Success)
+			{
+				if (Path.GetInvalidFileNameChars().Any(c => c == match.Value[0]))
+					throw new Exception($"Illegal char '{match.Value}' in file pattern at index {match.Index}.");
+			}
+
+			return match.Value;
+		}
+
+		private string ReplaceDirectoryPattern(Match match)
+		{
+			if (match.Groups["escape"].Success) return @"\"+match.Value;
+			if (match.Groups["two"].Success) return ".*";
+			if (match.Groups["one"].Success) return @"[^\\]*";
+			if (match.Groups["single"].Success) return @"[^\\]";
+
+			return match.Value;
 		}
 
 		/// <summary>
@@ -44,11 +111,8 @@ namespace TimeVault.Access.Models
 			{
 				if (columnName != nameof(Pattern)) return "";
 
-				if (string.IsNullOrEmpty(Pattern)) return "Pattern must contain value.";
-
-				return "";
+				return _patternError;
 			}
-		}
-		#endregion
+		}		
 	}
 }

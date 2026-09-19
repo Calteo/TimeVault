@@ -8,12 +8,16 @@ namespace TimeVault.Access
 		public VaultDatabase(string folder)
 			: base($@"{folder}\vault.db")
 		{
+			Folder = Path.GetFullPath(folder);
+
 			Exclusions = AddTable<ExclusionTable>();
-			Folders = AddTable<FolderTable>();
+			Selections = AddTable<SelectionTable>();
 		}
 
+		public string Folder { get; }
+
 		public ExclusionTable Exclusions { get; }
-		public FolderTable Folders { get; }
+		public SelectionTable Selections { get; }
 
 		protected override void Create(VersionInfo version)
 		{
