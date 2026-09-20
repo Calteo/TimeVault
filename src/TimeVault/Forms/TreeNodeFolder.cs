@@ -1,7 +1,13 @@
-﻿namespace TimeVault.Forms
+﻿using System.Diagnostics;
+using Toolbox.Collection.Generics;
+
+namespace TimeVault.Forms
 {
+	[DebuggerDisplay("{Text,nq} - {State,nq}")]
 	internal class TreeNodeFolder : TreeNode
 	{
+		private SelectionState _state;
+
 		public TreeNodeFolder(TreeNodeFolder? parent, DirectoryInfo folder, SelectionForm form)
 		{
 			Parent = parent;
@@ -10,39 +16,110 @@
 			Text = folder.Name;
 			ImageKey = "folder";
 			SelectedImageKey = ImageKey;
+			StateImageKey = State.ToString();
 
-			StateImageKey = KeyUnselected;
-			if (Parent != null)
+			if (form.Selected.Contains(Folder.FullName)) State = SelectionState.Selected;
+			else if (form.Deselected.Contains(Folder.FullName)) State = SelectionState.Deselected;
+			else if (form.HasSelection.Contains(Folder.FullName)) State = SelectionState.ContainsSelection;
+			else if (form.Vault.Exclusions.IsExcluded(Folder)) State = SelectionState.Excluded;
+
+			if (_state != SelectionState.Excluded)
 			{
-				if (Parent.StateImageKey==KeyIncluded || Parent.StateImageKey==KeyIncludedParent) 
-					StateImageKey = KeyIncludedParent;
-			}
-
-			if (form.Included.Contains(Folder.FullName)) StateImageKey = TreeNodeFolder.KeyIncluded;
-			else if (form.Excluded.Contains(Folder.FullName)) StateImageKey = TreeNodeFolder.KeyExcluded;
-			else if (form.HasSelection.Contains(Folder.FullName)) StateImageKey = TreeNodeFolder.KeyHasSelection;
-
-			ChildFolders = 
-				[.. Folder.EnumerateDirectories()
+				ChildFolders =
+					[.. Folder.EnumerateDirectories()
 						.Where(d => !d.Attributes.HasFlag(FileAttributes.Hidden)
 							&& !d.Attributes.HasFlag(FileAttributes.System)
-							&& CanReadDirectory(d)
-							&& !form.Vault.Exclusions.IsExcluded(Folder))
-				];
+							&& CanReadDirectory(d))
+					];
 
-			if (ChildFolders.Any())
-				Nodes.Add(new TreeNodeExpanding());
+				if (ChildFolders.Any())
+					Nodes.Add(new TreeNodeExpanding());
+			}
+			else
+			{
+				ChildFolders = [];
+			}
 		}
 
-		public const string KeyUnselected = "unselected";
-		public const string KeyIncluded = "included";
-		public const string KeyExcluded = "excluded";
-		public const string KeyIncludedParent = "included-parent";
-		public const string KeyHasSelection = "has-selection";
+		public SelectionState State
+		{
+			get => _state;
+			set
+			{
+				if (_state == value) return;
+				_state = value;
+				StateImageKey = _state.ToString();
+				ForeColor = DefaultForeColor;
+
+				_updatingState = true;
+
+				Parent?.UpdatedChild();
+				FolderNodes.ForEach(n => n.UpdatedParent());
+
+				_updatingState = false;
+			}
+		}
+
+		private Color DefaultForeColor => State == SelectionState.Excluded ? SystemColors.GrayText : SystemColors.WindowText;
+
+		private bool _updatingState;
+
+		private void UpdatedChild()
+		{
+			if (_updatingState) return;
+
+			var childNodes = FolderNodes.ToArray();
+
+			switch (State)
+			{
+				case SelectionState.Unselected:
+				case SelectionState.ContainsSelection:
+					State = childNodes.Any(n => n.State != SelectionState.Unselected)
+						? SelectionState.ContainsSelection
+						: SelectionState.Unselected;
+					break;
+			}
+
+			var mixed = Nodes.OfType<TreeNodeFolder>()
+								.Where(n => n.State != SelectionState.Excluded)
+								.GroupBy(n => n.State).Skip(1).Any();
+
+			if (mixed && State is SelectionState.Selected or SelectionState.Deselected)
+			{
+				ToolTipText = "Mixed selections.";
+				NodeFont = new Font(TreeView!.Font, FontStyle.Italic);				
+			}
+			else
+			{				
+				ToolTipText = "";
+				NodeFont = TreeView!.Font;
+			}
+
+			Parent?.UpdatedChild();
+		}
+
+		private void UpdatedParent()
+		{
+			if (_updatingState || State is SelectionState.Excluded or SelectionState.Selected or SelectionState.Deselected) return;
+
+			if (Parent!.State is SelectionState.Deselected or SelectionState.DeselectedParent)
+			{
+				State = SelectionState.DeselectedParent;
+			}
+			else if (Parent!.State is SelectionState.Selected or SelectionState.SelectedParent)
+			{
+				State = SelectionState.SelectedParent;
+			}
+			else if (Parent!.State is SelectionState.Unselected)
+			{
+				State = SelectionState.Unselected;
+			}
+		}
 
 		public new TreeNodeFolder? Parent { get; }
 		public DirectoryInfo Folder { get; }
-		public IEnumerable<DirectoryInfo> ChildFolders { get; }	
+		public IEnumerable<DirectoryInfo> ChildFolders { get; }
+		public IEnumerable<TreeNodeFolder> FolderNodes => Nodes.OfType<TreeNodeFolder>().Where(n => n.State != SelectionState.Excluded);
 
 		private bool CanReadDirectory(DirectoryInfo directory)
 		{
@@ -65,8 +142,11 @@
 				Nodes.Clear();
 				foreach (var folder in ChildFolders)
 				{
-					Nodes.Add(new TreeNodeFolder(this, folder, form));
+					var node = new TreeNodeFolder(this, folder, form);
+					Nodes.Add(node);
+					node.UpdatedParent();
 				}
+				
 			}
 			return Nodes.Count == 0;
 		}

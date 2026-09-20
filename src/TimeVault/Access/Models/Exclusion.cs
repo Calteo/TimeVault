@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Toolbox.Dapper.SQLite;
 using Toolbox.Dapper.SQLite.Attributes;
 
 namespace TimeVault.Access.Models
 {
+	[DebuggerDisplay("{IsDirectory ? 'D' : 'F'} - {Pattern}")]
 	internal partial class Exclusion : DatabaseModel, IDataErrorInfo
 	{
 		#region IsDirectory
@@ -99,6 +101,8 @@ namespace TimeVault.Access.Models
 
 			return match.Value;
 		}
+
+		public bool IsMatch(string fullpath) => _regex!.IsMatch(fullpath);
 
 		/// <summary>
 		/// No errors on row

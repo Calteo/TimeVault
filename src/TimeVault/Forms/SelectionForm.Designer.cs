@@ -31,11 +31,15 @@
 			components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SelectionForm));
 			treeView = new TreeView();
+			contextMenuTree = new ContextMenuStrip(components);
+			menuItemSelectFolder = new ToolStripMenuItem();
+			menuItemDeselectFolder = new ToolStripMenuItem();
 			imageList = new ImageList(components);
 			splitContainer = new SplitContainer();
 			listView = new ListView();
 			columnHeaderName = new ColumnHeader();
 			layoutPanel = new TableLayoutPanel();
+			contextMenuTree.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
 			splitContainer.Panel1.SuspendLayout();
 			splitContainer.Panel2.SuspendLayout();
@@ -45,6 +49,7 @@
 			// 
 			// treeView
 			// 
+			treeView.ContextMenuStrip = contextMenuTree;
 			treeView.Dock = DockStyle.Fill;
 			treeView.FullRowSelect = true;
 			treeView.HideSelection = false;
@@ -61,6 +66,30 @@
 			treeView.AfterSelect += TreeViewAfterSelect;
 			treeView.NodeMouseClick += TreeViewNodeMouseClick;
 			// 
+			// contextMenuTree
+			// 
+			contextMenuTree.ImageScalingSize = new Size(20, 20);
+			contextMenuTree.Items.AddRange(new ToolStripItem[] { menuItemSelectFolder, menuItemDeselectFolder });
+			contextMenuTree.Name = "contextMenuTree";
+			contextMenuTree.Size = new Size(140, 56);
+			contextMenuTree.Opening += ContextMenuTreeOpening;
+			// 
+			// menuItemSelectFolder
+			// 
+			menuItemSelectFolder.Image = Properties.Resources.checked_checkbox;
+			menuItemSelectFolder.Name = "menuItemSelectFolder";
+			menuItemSelectFolder.Size = new Size(139, 26);
+			menuItemSelectFolder.Text = "Select";
+			menuItemSelectFolder.Click += MenuItemSelectFolderClick;
+			// 
+			// menuItemDeselectFolder
+			// 
+			menuItemDeselectFolder.Image = Properties.Resources.checked_inverse_x;
+			menuItemDeselectFolder.Name = "menuItemDeselectFolder";
+			menuItemDeselectFolder.Size = new Size(139, 26);
+			menuItemDeselectFolder.Text = "Deselect";
+			menuItemDeselectFolder.Click += MenuItemDeselectFolderClick;
+			// 
 			// imageList
 			// 
 			imageList.ColorDepth = ColorDepth.Depth32Bit;
@@ -69,13 +98,15 @@
 			imageList.Images.SetKeyName(0, "folder");
 			imageList.Images.SetKeyName(1, "drives");
 			imageList.Images.SetKeyName(2, "drive");
-			imageList.Images.SetKeyName(3, "unselected");
-			imageList.Images.SetKeyName(4, "included");
-			imageList.Images.SetKeyName(5, "file-selected");
-			imageList.Images.SetKeyName(6, "file");
-			imageList.Images.SetKeyName(7, "included-parent");
-			imageList.Images.SetKeyName(8, "has-selection");
-			imageList.Images.SetKeyName(9, "excluded");
+			imageList.Images.SetKeyName(3, "Unselected");
+			imageList.Images.SetKeyName(4, "Selected");
+			imageList.Images.SetKeyName(5, "SelectedParent");
+			imageList.Images.SetKeyName(6, "file-selected");
+			imageList.Images.SetKeyName(7, "file");
+			imageList.Images.SetKeyName(8, "ContainsSelection");
+			imageList.Images.SetKeyName(9, "Excluded");
+			imageList.Images.SetKeyName(10, "DeselectedParent");
+			imageList.Images.SetKeyName(11, "Deselected");
 			// 
 			// splitContainer
 			// 
@@ -141,6 +172,7 @@
 			Name = "SelectionForm";
 			Text = "FolderSelection";
 			Load += FolderSelectionLoad;
+			contextMenuTree.ResumeLayout(false);
 			splitContainer.Panel1.ResumeLayout(false);
 			splitContainer.Panel2.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)splitContainer).EndInit();
@@ -157,5 +189,8 @@
 		private TableLayoutPanel layoutPanel;
 		private ListView listView;
 		private ColumnHeader columnHeaderName;
+		private ContextMenuStrip contextMenuTree;
+		private ToolStripMenuItem menuItemDeselectFolder;
+		private ToolStripMenuItem menuItemSelectFolder;
 	}
 }

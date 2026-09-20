@@ -13,8 +13,8 @@ namespace TimeVault.Forms
 		[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 		public required Vault Vault { get; init; }
 
-		public HashSet<string> Excluded { get; private set; } = [];
-		public HashSet<string> Included { get; private set; } = [];
+		public HashSet<string> Deselected { get; private set; } = [];
+		public HashSet<string> Selected { get; private set; } = [];
 
 		public HashSet<string> HasSelection { get; private set; } = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
@@ -22,8 +22,8 @@ namespace TimeVault.Forms
 		{
 			var selections = Vault.Selections.Select().ToDictionary(s => s.Path);
 
-			Included = new HashSet<string>(selections.Values.Where(s => s.Selected).Select(s => s.Path), StringComparer.InvariantCultureIgnoreCase);
-			Excluded = new HashSet<string>(selections.Values.Where(s => !s.Selected).Select(s => s.Path), StringComparer.InvariantCultureIgnoreCase);
+			Selected = new HashSet<string>(selections.Values.Where(s => s.Selected).Select(s => s.Path), StringComparer.InvariantCultureIgnoreCase);
+			Deselected = new HashSet<string>(selections.Values.Where(s => !s.Selected).Select(s => s.Path), StringComparer.InvariantCultureIgnoreCase);
 
 			foreach (var selection in selections.Values)
 			{
@@ -38,11 +38,11 @@ namespace TimeVault.Forms
 			var ignore = new DriveType[] { DriveType.Removable, DriveType.Unknown, DriveType.CDRom, DriveType.NoRootDirectory }.ToHashSet();
 
 			foreach (var drive in DriveInfo.GetDrives().Where(d => !ignore.Contains(d.DriveType)).OrderBy(d => d.Name))
-			{				
+			{
 				var node = new TreeNodeFolder(null, new DirectoryInfo(drive.Name), this)
 				{
 					Text = $"{drive.Name} - {drive.VolumeLabel}",
-					ImageKey = drive.DriveType == DriveType.Network ? "drives" : "drive"					
+					ImageKey = drive.DriveType == DriveType.Network ? "drives" : "drive"
 				};
 				node.SelectedImageKey = node.ImageKey;
 
@@ -69,17 +69,87 @@ namespace TimeVault.Forms
 		{
 			TreeViewHitTestInfo hit = treeView.HitTest(e.Location);
 
-			if (hit.Location == TreeViewHitTestLocations.StateImage)
+			NodeClicked = e.Node as TreeNodeFolder;
+
+			if (e.Button == MouseButtons.Left && hit.Location == TreeViewHitTestLocations.StateImage && hit.Node is TreeNodeFolder folderNode)
 			{
-				switch (e.Node?.StateImageKey)
+				switch (folderNode.State)
 				{
-					case TreeNodeFolder.KeyUnselected:
-						e.Node.StateImageKey = TreeNodeFolder.KeyIncluded;
+					case SelectionState.Unselected:
+						folderNode.State = SelectionState.Selected;
 						break;
-					case TreeNodeFolder.KeyIncluded:
-						e.Node.StateImageKey = TreeNodeFolder.KeyUnselected;
+					case SelectionState.Selected:
+						folderNode.State = SelectionState.Deselected;
+						break;
+					case SelectionState.SelectedParent:
+						folderNode.State = SelectionState.Deselected;
+						break;
+					case SelectionState.DeselectedParent:
+						folderNode.State = SelectionState.Selected;
+						break;
+					case SelectionState.Deselected: // --> Unselected
+						if (folderNode.Parent is TreeNodeFolder parent)
+						{
+							switch (parent.State)
+							{
+								case SelectionState.Selected:
+								case SelectionState.SelectedParent:
+									folderNode.State = SelectionState.SelectedParent;
+									break;
+								case SelectionState.Deselected:
+								case SelectionState.DeselectedParent:
+									folderNode.State = SelectionState.DeselectedParent;
+									break;
+								default:
+									folderNode.State = SelectionState.Unselected;
+									break;
+							}
+						}
+						else
+							folderNode.State = SelectionState.Unselected;
 						break;
 				}
+			}
+		}
+
+		private TreeNodeFolder? NodeClicked { get; set; }
+
+		private void ContextMenuTreeOpening(object sender, CancelEventArgs e)
+		{
+			e.Cancel = NodeClicked == null;
+
+			if (NodeClicked != null)
+			{
+				menuItemSelectFolder.Enabled = NodeClicked.State != SelectionState.Excluded;
+				menuItemDeselectFolder.Enabled = NodeClicked.State != SelectionState.Excluded;
+			}
+		}
+
+		private void MenuItemSelectFolderClick(object sender, EventArgs e)
+		{
+			if (NodeClicked == null) return;
+
+			NodeClicked.State = SelectionState.Selected;
+			UpdateChildNodes(NodeClicked, SelectionState.SelectedParent);
+
+			NodeClicked = null;
+		}
+
+		private void MenuItemDeselectFolderClick(object sender, EventArgs e)
+		{
+			if (NodeClicked == null) return;
+			
+			NodeClicked.State = SelectionState.Deselected;
+			UpdateChildNodes(NodeClicked, SelectionState.DeselectedParent);
+			NodeClicked = null;
+		}
+
+		private void UpdateChildNodes(TreeNodeFolder node, SelectionState state)
+		{
+			foreach (var childNode in node.FolderNodes) 
+			{
+				childNode.State = state;
+				UpdateChildNodes(childNode, state);
 			}
 		}
 	}
