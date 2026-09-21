@@ -12,11 +12,12 @@ namespace TimeVault.Forms
 		{
 			Parent = parent;
 			Folder = folder;
+			Form = form;
 
 			Text = folder.Name;
 			ImageKey = "folder";
 			SelectedImageKey = ImageKey;
-			StateImageKey = State.ToString();
+			StateImageKey = State.ToString();			
 
 			if (form.Selected.Contains(Folder.FullName)) State = SelectionState.Selected;
 			else if (form.Deselected.Contains(Folder.FullName)) State = SelectionState.Deselected;
@@ -39,6 +40,7 @@ namespace TimeVault.Forms
 			{
 				ChildFolders = [];
 			}
+			Mixed = Form.Selected.Any(p => p.StartsWith(Folder.FullName)) && Form.Deselected.Any(p => p.StartsWith(Folder.FullName));
 		}
 
 		public SelectionState State
@@ -63,7 +65,7 @@ namespace TimeVault.Forms
 		private Color DefaultForeColor => State == SelectionState.Excluded ? SystemColors.GrayText : SystemColors.WindowText;
 
 		private bool _updatingState;
-
+		
 		private void UpdatedChild()
 		{
 			if (_updatingState) return;
@@ -80,20 +82,9 @@ namespace TimeVault.Forms
 					break;
 			}
 
-			var mixed = Nodes.OfType<TreeNodeFolder>()
-								.Where(n => n.State != SelectionState.Excluded)
-								.GroupBy(n => n.State).Skip(1).Any();
-
-			if (mixed && State is SelectionState.Selected or SelectionState.Deselected)
-			{
-				ToolTipText = "Mixed selections.";
-				NodeFont = new Font(TreeView!.Font, FontStyle.Italic);				
-			}
-			else
-			{				
-				ToolTipText = "";
-				NodeFont = TreeView!.Font;
-			}
+			Mixed = Nodes.OfType<TreeNodeFolder>()
+						.Where(n => n.State != SelectionState.Excluded)
+						.GroupBy(n => n.State).Skip(1).Any();
 
 			Parent?.UpdatedChild();
 		}
@@ -116,10 +107,34 @@ namespace TimeVault.Forms
 			}
 		}
 
+		public new SelectionForm Form { get; }
 		public new TreeNodeFolder? Parent { get; }
 		public DirectoryInfo Folder { get; }
 		public IEnumerable<DirectoryInfo> ChildFolders { get; }
 		public IEnumerable<TreeNodeFolder> FolderNodes => Nodes.OfType<TreeNodeFolder>().Where(n => n.State != SelectionState.Excluded);
+
+		#region Mixed
+		private bool _mixed;
+		public bool Mixed
+		{
+			get => _mixed;
+			private set
+			{
+				_mixed = value;
+
+				if (Mixed && State is SelectionState.Selected or SelectionState.Deselected)
+				{
+					ToolTipText = "Mixed selections.";
+					NodeFont = new Font(Form.Font, FontStyle.Italic);
+				}
+				else
+				{
+					ToolTipText = "";
+					NodeFont = null;
+				}
+			}
+		}
+		#endregion
 
 		private bool CanReadDirectory(DirectoryInfo directory)
 		{
@@ -135,10 +150,14 @@ namespace TimeVault.Forms
 			}
 		}
 
+		public bool WasExpanded => Nodes.Count < 1 || Nodes[0] is not TreeNodeExpanding;
+
 		public bool Expanding(SelectionForm form)
 		{
-			if (Nodes.Count==1 && Nodes[0] is TreeNodeExpanding)
+			if (!WasExpanded)
 			{
+				_updatingState = true; // prevent partial updates
+
 				Nodes.Clear();
 				foreach (var folder in ChildFolders)
 				{
@@ -146,7 +165,9 @@ namespace TimeVault.Forms
 					Nodes.Add(node);
 					node.UpdatedParent();
 				}
-				
+				_updatingState = false;
+
+				UpdatedChild();
 			}
 			return Nodes.Count == 0;
 		}

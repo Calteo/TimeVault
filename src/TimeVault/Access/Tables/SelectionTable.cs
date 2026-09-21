@@ -5,15 +5,19 @@ namespace TimeVault.Access.Tables
 {
 	internal class SelectionTable() : DatabaseTable<VaultDatabase, Selection>("Selection")
 	{
-		/*
-		public IEnumerable<Selection> GetSelections()
+		internal void Replace(List<Selection> selections)
 		{
-			bool excludedVault = false;
+			using var connection = GetConnection();
+			using var transaction = connection.BeginTransaction();
 
-			foreach (var selection in Select())
-			{				
-			}
+			// delete all previous selections
+			DeleteWhere("", transaction); 
+
+			// insert new selections
+			foreach (var selection in selections)
+				Insert(selection, transaction);
+
+			transaction.Commit();
 		}
-		*/
 	}
 }

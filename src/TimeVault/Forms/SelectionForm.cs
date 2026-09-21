@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using TimeVault.Access.Models;
 using TimeVault.Vaults;
 
 namespace TimeVault.Forms
@@ -138,7 +139,7 @@ namespace TimeVault.Forms
 		private void MenuItemDeselectFolderClick(object sender, EventArgs e)
 		{
 			if (NodeClicked == null) return;
-			
+
 			NodeClicked.State = SelectionState.Deselected;
 			UpdateChildNodes(NodeClicked, SelectionState.DeselectedParent);
 			NodeClicked = null;
@@ -146,11 +147,60 @@ namespace TimeVault.Forms
 
 		private void UpdateChildNodes(TreeNodeFolder node, SelectionState state)
 		{
-			foreach (var childNode in node.FolderNodes) 
+			foreach (var childNode in node.FolderNodes)
 			{
 				childNode.State = state;
 				UpdateChildNodes(childNode, state);
 			}
+		}
+
+		private List<Selection> Selections { get; } = [];
+
+		private void ButtonOkClick(object sender, EventArgs e)
+		{
+			foreach (TreeNode node in treeView.Nodes)
+			{
+				CollectSelections(node);
+			}
+
+			Vault.Selections.Replace(Selections);
+		}
+
+		private void CollectSelections(TreeNode node)
+		{
+			if (node is TreeNodeFolder folderNode)
+			{
+				if (folderNode.State is SelectionState.Selected or SelectionState.Deselected)
+				{
+					AddSelection(folderNode);
+				}
+				if (folderNode.Mixed || folderNode.State is SelectionState.ContainsSelection)
+				{
+					foreach  (TreeNode childNode in folderNode.Nodes)
+					{
+						CollectSelections(childNode);
+					}
+				}
+			}
+			else if (node is TreeNodeExpanding expandingNode)
+			{
+				if (expandingNode.Parent is TreeNodeFolder parent)
+				{
+					foreach(var deselected in Deselected.Where(p => p.StartsWith(parent.Folder.FullName) && p.Length>parent.Folder.FullName.Length))
+					{
+						Selections.Add(new Selection { IsDirectory = true, Path = deselected, Selected = false }); 
+					}
+					foreach (var selected in Selected.Where(p => p.StartsWith(parent.Folder.FullName) && p.Length > parent.Folder.FullName.Length))
+					{
+						Selections.Add(new Selection { IsDirectory = true, Path = selected, Selected = true });
+					}
+				}
+			}
+		}
+
+		private void AddSelection(TreeNodeFolder node)
+		{
+			Selections.Add(new Selection{ IsDirectory = true, Path = node.Folder.FullName, Selected = node.State==SelectionState.Selected });
 		}
 	}
 }

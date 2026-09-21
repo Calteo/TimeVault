@@ -39,6 +39,8 @@
 			listView = new ListView();
 			columnHeaderName = new ColumnHeader();
 			layoutPanel = new TableLayoutPanel();
+			buttonOk = new Button();
+			buttonCancel = new Button();
 			contextMenuTree.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
 			splitContainer.Panel1.SuspendLayout();
@@ -59,7 +61,7 @@
 			treeView.Margin = new Padding(4);
 			treeView.Name = "treeView";
 			treeView.SelectedImageIndex = 0;
-			treeView.Size = new Size(323, 527);
+			treeView.Size = new Size(323, 521);
 			treeView.StateImageList = imageList;
 			treeView.TabIndex = 0;
 			treeView.BeforeExpand += TreeViewBeforeExpand;
@@ -122,7 +124,7 @@
 			// splitContainer.Panel2
 			// 
 			splitContainer.Panel2.Controls.Add(listView);
-			splitContainer.Size = new Size(970, 527);
+			splitContainer.Size = new Size(970, 521);
 			splitContainer.SplitterDistance = 323;
 			splitContainer.TabIndex = 1;
 			// 
@@ -133,10 +135,10 @@
 			listView.FullRowSelect = true;
 			listView.Location = new Point(0, 0);
 			listView.Name = "listView";
-			listView.Size = new Size(643, 527);
+			listView.Size = new Size(643, 521);
 			listView.Sorting = SortOrder.Ascending;
 			listView.StateImageList = imageList;
-			listView.TabIndex = 0;
+			listView.TabIndex = 1;
 			listView.UseCompatibleStateImageBehavior = false;
 			listView.View = View.Details;
 			// 
@@ -152,25 +154,52 @@
 			layoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
 			layoutPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
 			layoutPanel.Controls.Add(splitContainer, 0, 0);
+			layoutPanel.Controls.Add(buttonOk, 1, 1);
+			layoutPanel.Controls.Add(buttonCancel, 2, 1);
 			layoutPanel.Dock = DockStyle.Fill;
 			layoutPanel.Location = new Point(0, 0);
 			layoutPanel.Name = "layoutPanel";
 			layoutPanel.RowCount = 2;
 			layoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-			layoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
+			layoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
 			layoutPanel.Size = new Size(976, 569);
 			layoutPanel.TabIndex = 2;
 			// 
+			// buttonOk
+			// 
+			buttonOk.DialogResult = DialogResult.OK;
+			buttonOk.Dock = DockStyle.Fill;
+			buttonOk.Location = new Point(679, 530);
+			buttonOk.Name = "buttonOk";
+			buttonOk.Size = new Size(144, 36);
+			buttonOk.TabIndex = 2;
+			buttonOk.Text = "&Ok";
+			buttonOk.UseVisualStyleBackColor = true;
+			buttonOk.Click += ButtonOkClick;
+			// 
+			// buttonCancel
+			// 
+			buttonCancel.DialogResult = DialogResult.Cancel;
+			buttonCancel.Dock = DockStyle.Fill;
+			buttonCancel.Location = new Point(829, 530);
+			buttonCancel.Name = "buttonCancel";
+			buttonCancel.Size = new Size(144, 36);
+			buttonCancel.TabIndex = 3;
+			buttonCancel.Text = "&Cancel";
+			buttonCancel.UseVisualStyleBackColor = true;
+			// 
 			// SelectionForm
 			// 
+			AcceptButton = buttonOk;
 			AutoScaleDimensions = new SizeF(10F, 25F);
 			AutoScaleMode = AutoScaleMode.Font;
+			CancelButton = buttonCancel;
 			ClientSize = new Size(976, 569);
 			Controls.Add(layoutPanel);
 			Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
 			Margin = new Padding(4);
 			Name = "SelectionForm";
-			Text = "FolderSelection";
+			Text = "Selection";
 			Load += FolderSelectionLoad;
 			contextMenuTree.ResumeLayout(false);
 			splitContainer.Panel1.ResumeLayout(false);
@@ -192,5 +221,7 @@
 		private ContextMenuStrip contextMenuTree;
 		private ToolStripMenuItem menuItemDeselectFolder;
 		private ToolStripMenuItem menuItemSelectFolder;
+		private Button buttonOk;
+		private Button buttonCancel;
 	}
 }

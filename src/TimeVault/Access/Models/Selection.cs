@@ -4,7 +4,7 @@ using Toolbox.Dapper.SQLite.Attributes;
 
 namespace TimeVault.Access.Models
 {
-	[DebuggerDisplay("{Directory ? \"Dir\" : \"File\"} {Path}")]
+	[DebuggerDisplay("{IsDirectory ? 'D' : 'F',nq} {Selected}: {Path}")]
 	internal class Selection : DatabaseModel
 	{
 		#region IsDirectory
