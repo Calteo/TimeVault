@@ -61,8 +61,15 @@ namespace TimeVault.Forms
 
 		private void TreeViewAfterSelect(object sender, TreeViewEventArgs e)
 		{
-			if (e.Node is TreeNodeFolder node)
-			{
+			listView.Items.Clear();
+			if (e.Node is TreeNodeFolder node && node.State != SelectionState.Excluded)
+			{				
+				var items = node.Files.Select(f => new ListItemFile(listView, node, f)).ToArray();
+				listView.Items.AddRange(items);
+				foreach (ColumnHeader header in listView.Columns)
+				{
+					header.AutoResize(ColumnHeaderAutoResizeStyle.ColumnContent);
+				}
 			}
 		}
 

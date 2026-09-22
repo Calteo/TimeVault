@@ -87,7 +87,13 @@ namespace TimeVault.Access.Tables
 		internal bool IsExcluded(DirectoryInfo folder)
 		{
 			Fetch();
-			return _directoryExclusions.Any(e => e.IsMatch(folder.FullName));			
+			return _directoryExclusions.Any(e => e.IsMatch(folder.FullName));					
+		}
+
+		internal bool IsExcluded(FileInfo file)
+		{
+			Fetch();
+			return _fileExclusions.Any(e => e.IsMatch(file.Name));
 		}
 
 		public IEnumerable<Exclusion> Exclusions => Fetch(_exclusions);

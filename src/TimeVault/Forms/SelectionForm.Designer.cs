@@ -38,6 +38,10 @@
 			splitContainer = new SplitContainer();
 			listView = new ListView();
 			columnHeaderName = new ColumnHeader();
+			columnHeaderLastChanged = new ColumnHeader();
+			columnHeaderType = new ColumnHeader();
+			columnHeaderSize = new ColumnHeader();
+			imageListFileTypes = new ImageList(components);
 			layoutPanel = new TableLayoutPanel();
 			buttonOk = new Button();
 			buttonCancel = new Button();
@@ -130,12 +134,14 @@
 			// 
 			// listView
 			// 
-			listView.Columns.AddRange(new ColumnHeader[] { columnHeaderName });
+			listView.Columns.AddRange(new ColumnHeader[] { columnHeaderName, columnHeaderLastChanged, columnHeaderType, columnHeaderSize });
 			listView.Dock = DockStyle.Fill;
 			listView.FullRowSelect = true;
+			listView.LargeImageList = imageListFileTypes;
 			listView.Location = new Point(0, 0);
 			listView.Name = "listView";
 			listView.Size = new Size(643, 521);
+			listView.SmallImageList = imageListFileTypes;
 			listView.Sorting = SortOrder.Ascending;
 			listView.StateImageList = imageList;
 			listView.TabIndex = 1;
@@ -145,7 +151,29 @@
 			// columnHeaderName
 			// 
 			columnHeaderName.Text = "Name";
-			columnHeaderName.Width = 150;
+			columnHeaderName.Width = 180;
+			// 
+			// columnHeaderLastChanged
+			// 
+			columnHeaderLastChanged.Text = "Changed";
+			columnHeaderLastChanged.Width = 150;
+			// 
+			// columnHeaderType
+			// 
+			columnHeaderType.Text = "Type";
+			columnHeaderType.Width = 120;
+			// 
+			// columnHeaderSize
+			// 
+			columnHeaderSize.Text = "Size";
+			columnHeaderSize.TextAlign = HorizontalAlignment.Right;
+			columnHeaderSize.Width = 120;
+			// 
+			// imageListFileTypes
+			// 
+			imageListFileTypes.ColorDepth = ColorDepth.Depth32Bit;
+			imageListFileTypes.ImageSize = new Size(24, 24);
+			imageListFileTypes.TransparentColor = Color.Transparent;
 			// 
 			// layoutPanel
 			// 
@@ -223,5 +251,9 @@
 		private ToolStripMenuItem menuItemSelectFolder;
 		private Button buttonOk;
 		private Button buttonCancel;
+		private ColumnHeader columnHeaderLastChanged;
+		private ColumnHeader columnHeaderType;
+		private ColumnHeader columnHeaderSize;
+		private ImageList imageListFileTypes;
 	}
 }

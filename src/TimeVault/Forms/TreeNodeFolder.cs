@@ -5,9 +5,7 @@ namespace TimeVault.Forms
 {
 	[DebuggerDisplay("{Text,nq} - {State,nq}")]
 	internal class TreeNodeFolder : TreeNode
-	{
-		private SelectionState _state;
-
+	{	
 		public TreeNodeFolder(TreeNodeFolder? parent, DirectoryInfo folder, SelectionForm form)
 		{
 			Parent = parent;
@@ -43,6 +41,8 @@ namespace TimeVault.Forms
 			Mixed = Form.Selected.Any(p => p.StartsWith(Folder.FullName)) && Form.Deselected.Any(p => p.StartsWith(Folder.FullName));
 		}
 
+		#region State
+		private SelectionState _state;
 		public SelectionState State
 		{
 			get => _state;
@@ -61,6 +61,7 @@ namespace TimeVault.Forms
 				_updatingState = false;
 			}
 		}
+		#endregion
 
 		private Color DefaultForeColor => State == SelectionState.Excluded ? SystemColors.GrayText : SystemColors.WindowText;
 
@@ -107,7 +108,7 @@ namespace TimeVault.Forms
 			}
 		}
 
-		public new SelectionForm Form { get; }
+		public SelectionForm Form { get; }
 		public new TreeNodeFolder? Parent { get; }
 		public DirectoryInfo Folder { get; }
 		public IEnumerable<DirectoryInfo> ChildFolders { get; }
@@ -179,7 +180,8 @@ namespace TimeVault.Forms
 				return Folder.EnumerateFiles()
 						.Where(f =>
 						!f.Attributes.HasFlag(FileAttributes.Hidden)
-						&& !f.Attributes.HasFlag(FileAttributes.System));
+						&& !f.Attributes.HasFlag(FileAttributes.System)
+						&& !Form.Vault.Exclusions.IsExcluded(f));
 			}
 		}
 	}
