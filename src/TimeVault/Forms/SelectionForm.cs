@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using TimeVault.Access.Models;
 using TimeVault.Vaults;
+using Toolbox.CommandLine;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace TimeVault.Forms
 {
@@ -17,22 +20,41 @@ namespace TimeVault.Forms
 		public HashSet<string> Deselected { get; private set; } = [];
 		public HashSet<string> Selected { get; private set; } = [];
 
+		public HashSet<string> DeselectedFiles { get; private set; } = [];
+		public HashSet<string> SelectedFiles { get; private set; } = [];
+
+
 		public HashSet<string> HasSelection { get; private set; } = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
 		private void FolderSelectionLoad(object sender, EventArgs e)
 		{
-			var selections = Vault.Selections.Select().ToDictionary(s => s.Path);
+			var selectionGroups = Vault.Selections.Select().GroupBy(s => s.IsDirectory);
 
-			Selected = new HashSet<string>(selections.Values.Where(s => s.Selected).Select(s => s.Path), StringComparer.InvariantCultureIgnoreCase);
-			Deselected = new HashSet<string>(selections.Values.Where(s => !s.Selected).Select(s => s.Path), StringComparer.InvariantCultureIgnoreCase);
-
-			foreach (var selection in selections.Values)
+			foreach (var selectionGroup in selectionGroups)
 			{
-				var path = Path.GetDirectoryName(selection.Path);
-				while (!string.IsNullOrEmpty(path))
+				var selected = selectionGroup.Where(s => s.Selected);
+				var deselected = selectionGroup.Where(s => !s.Selected);
+
+				if (selectionGroup.Key) // Directories
 				{
-					if (!selections.ContainsKey(path)) HasSelection.Add(path);
-					path = Path.GetDirectoryName(path);
+					Selected = selected.Select(s => s.Path).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+					Deselected = deselected.Select(s => s.Path).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+
+					var directorySelections = selectionGroup.ToDictionary(s => s.Path);
+					foreach (var selection in directorySelections.Values)
+					{
+						var path = Path.GetDirectoryName(selection.Path);
+						while (!string.IsNullOrEmpty(path))
+						{
+							if (!directorySelections.ContainsKey(path)) HasSelection.Add(path);
+							path = Path.GetDirectoryName(path);
+						}
+					}
+				}
+				else // Files
+				{
+					SelectedFiles = selected.Select(s => s.Path).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+					DeselectedFiles = deselected.Select(s => s.Path).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
 				}
 			}
 
@@ -61,14 +83,23 @@ namespace TimeVault.Forms
 
 		private void TreeViewAfterSelect(object sender, TreeViewEventArgs e)
 		{
+			if (e.Node is TreeNodeFolder node)
+				UpdateListView(node);
+		}
+
+		private void UpdateListView(TreeNodeFolder? node)
+		{
 			listView.Items.Clear();
-			if (e.Node is TreeNodeFolder node && node.State != SelectionState.Excluded)
-			{				
-				var items = node.Files.Select(f => new ListItemFile(listView, node, f)).ToArray();
+
+			if (node != null && node.State != SelectionState.Excluded)
+			{
+				var items = node.Files.Select(f => new ListItemFile(listView, node, f, this)).ToArray();
 				listView.Items.AddRange(items);
+
+				var resize = items.Length == 0 ? ColumnHeaderAutoResizeStyle.HeaderSize : ColumnHeaderAutoResizeStyle.ColumnContent;
 				foreach (ColumnHeader header in listView.Columns)
 				{
-					header.AutoResize(ColumnHeaderAutoResizeStyle.ColumnContent);
+					header.AutoResize(resize);
 				}
 			}
 		}
@@ -118,6 +149,7 @@ namespace TimeVault.Forms
 						break;
 				}
 			}
+			UpdateListView(NodeClicked);
 		}
 
 		private TreeNodeFolder? NodeClicked { get; set; }
@@ -169,8 +201,21 @@ namespace TimeVault.Forms
 			{
 				CollectSelections(node);
 			}
+			foreach (var selectedFile in SelectedFiles)
+			{
+				AddFileSelection(selectedFile, true);
+			}
+			foreach (var deselectedFile in DeselectedFiles)
+			{
+				AddFileSelection(deselectedFile, false);
+			}
 
 			Vault.Selections.Replace(Selections);
+		}
+
+		private void AddFileSelection(string file, bool selected)
+		{
+			Selections.Add(new Selection { Path = file, IsDirectory = false, Selected = selected });
 		}
 
 		private void CollectSelections(TreeNode node)
@@ -183,7 +228,7 @@ namespace TimeVault.Forms
 				}
 				if (folderNode.Mixed || folderNode.State is SelectionState.ContainsSelection)
 				{
-					foreach  (TreeNode childNode in folderNode.Nodes)
+					foreach (TreeNode childNode in folderNode.Nodes)
 					{
 						CollectSelections(childNode);
 					}
@@ -193,9 +238,9 @@ namespace TimeVault.Forms
 			{
 				if (expandingNode.Parent is TreeNodeFolder parent)
 				{
-					foreach(var deselected in Deselected.Where(p => p.StartsWith(parent.Folder.FullName) && p.Length>parent.Folder.FullName.Length))
+					foreach (var deselected in Deselected.Where(p => p.StartsWith(parent.Folder.FullName) && p.Length > parent.Folder.FullName.Length))
 					{
-						Selections.Add(new Selection { IsDirectory = true, Path = deselected, Selected = false }); 
+						Selections.Add(new Selection { IsDirectory = true, Path = deselected, Selected = false });
 					}
 					foreach (var selected in Selected.Where(p => p.StartsWith(parent.Folder.FullName) && p.Length > parent.Folder.FullName.Length))
 					{
@@ -207,7 +252,41 @@ namespace TimeVault.Forms
 
 		private void AddSelection(TreeNodeFolder node)
 		{
-			Selections.Add(new Selection{ IsDirectory = true, Path = node.Folder.FullName, Selected = node.State==SelectionState.Selected });
+			Selections.Add(new Selection { IsDirectory = true, Path = node.Folder.FullName, Selected = node.State == SelectionState.Selected });
+		}
+
+		private void ListViewMouseClick(object sender, MouseEventArgs e)
+		{
+			if (e.Button != MouseButtons.Left)
+				return;
+
+			ListViewHitTestInfo hit = listView.HitTest(e.Location);
+
+			if (hit.Item==null || hit.Location!=ListViewHitTestLocations.StateImage) return;
+
+			if (hit.Item is ListItemFile fileItem)
+			{
+				switch (fileItem.State)
+				{
+					case SelectionState.Unselected:
+						fileItem.State = SelectionState.Selected;						
+						SelectedFiles.Add(fileItem.File.FullName);
+						break;
+					case SelectionState.Selected:
+						fileItem.State = SelectionState.Deselected;
+						SelectedFiles.Remove(fileItem.File.FullName);
+						DeselectedFiles.Add(fileItem.File.FullName);
+						break;
+					case SelectionState.Deselected:
+						fileItem.State = fileItem.Node.State == SelectionState.Unselected ? SelectionState.Unselected : SelectionState.SelectedParent;
+						DeselectedFiles.Remove(fileItem.File.FullName);
+						break;
+					case SelectionState.SelectedParent:
+						fileItem.State = SelectionState.Deselected;
+						DeselectedFiles.Add(fileItem.File.FullName);
+						break;
+				}				
+			}
 		}
 	}
 }

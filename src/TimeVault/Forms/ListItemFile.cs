@@ -4,7 +4,7 @@ namespace TimeVault.Forms
 {
 	internal class ListItemFile : ListViewItem
 	{
-		public ListItemFile(ListView view, TreeNodeFolder node, FileInfo file)
+		public ListItemFile(ListView view, TreeNodeFolder node, FileInfo file, SelectionForm form)
 			: base(file.Name)
 		{
 			Node = node;
@@ -34,6 +34,11 @@ namespace TimeVault.Forms
 					State = node.State;
 					break;
 			}
+
+			if (form.SelectedFiles.Contains(file.FullName)) 
+				State = SelectionState.Selected;
+			else if(form.DeselectedFiles.Contains(file.FullName))
+				State = SelectionState.Deselected;
 		}
 
 		public TreeNodeFolder Node { get; }

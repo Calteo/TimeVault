@@ -147,6 +147,7 @@
 			listView.TabIndex = 1;
 			listView.UseCompatibleStateImageBehavior = false;
 			listView.View = View.Details;
+			listView.MouseClick += ListViewMouseClick;
 			// 
 			// columnHeaderName
 			// 
