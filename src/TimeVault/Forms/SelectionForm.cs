@@ -40,21 +40,20 @@ namespace TimeVault.Forms
 					Selected = selected.Select(s => s.Path).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
 					Deselected = deselected.Select(s => s.Path).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
 
-					var directorySelections = selectionGroup.ToDictionary(s => s.Path);
-					foreach (var selection in directorySelections.Values)
+					foreach (var selection in selectionGroup)
 					{
-						var path = Path.GetDirectoryName(selection.Path);
-						while (!string.IsNullOrEmpty(path))
-						{
-							if (!directorySelections.ContainsKey(path)) HasSelection.Add(path);
-							path = Path.GetDirectoryName(path);
-						}
+						FillHasSelection(Path.GetDirectoryName(selection.Path));
 					}
 				}
 				else // Files
 				{
 					SelectedFiles = selected.Select(s => s.Path).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
 					DeselectedFiles = deselected.Select(s => s.Path).ToHashSet(StringComparer.InvariantCultureIgnoreCase);
+
+					foreach (var fileSelection in selectionGroup)
+					{
+						FillHasSelection(Path.GetDirectoryName(fileSelection.Path));
+					}
 				}
 			}
 
@@ -70,6 +69,15 @@ namespace TimeVault.Forms
 				node.SelectedImageKey = node.ImageKey;
 
 				treeView.Nodes.Add(node);
+			}
+		}
+
+		private void FillHasSelection(string? path)
+		{
+			while (!string.IsNullOrEmpty(path))
+			{
+				if (!Selected.Contains(path) && !Deselected.Contains(path)) HasSelection.Add(path);
+				path = Path.GetDirectoryName(path);
 			}
 		}
 
@@ -148,6 +156,12 @@ namespace TimeVault.Forms
 							folderNode.State = SelectionState.Unselected;
 						break;
 				}
+				SelectedFiles.Where(f => f.StartsWith(folderNode.Folder.FullName, StringComparison.CurrentCultureIgnoreCase))
+					.ToList()
+					.ForEach(f => SelectedFiles.Remove(f));
+				DeselectedFiles.Where(f => f.StartsWith(folderNode.Folder.FullName, StringComparison.CurrentCultureIgnoreCase))
+					.ToList()
+					.ForEach(f => DeselectedFiles.Remove(f));
 			}
 			UpdateListView(NodeClicked);
 		}
@@ -270,12 +284,23 @@ namespace TimeVault.Forms
 				{
 					case SelectionState.Unselected:
 						fileItem.State = SelectionState.Selected;						
-						SelectedFiles.Add(fileItem.File.FullName);
+						SelectedFiles.Add(fileItem.File.FullName);						
 						break;
 					case SelectionState.Selected:
-						fileItem.State = SelectionState.Deselected;
 						SelectedFiles.Remove(fileItem.File.FullName);
-						DeselectedFiles.Add(fileItem.File.FullName);
+						if (fileItem.Node.IsSelectedState)
+						{
+							fileItem.State = SelectionState.Deselected;
+							DeselectedFiles.Add(fileItem.File.FullName);
+						}
+						else if (fileItem.Node.IsDeselectedState)
+						{
+							fileItem.State = SelectionState.DeselectedParent;
+						}
+						else
+						{
+							fileItem.State = SelectionState.Unselected;
+						}												
 						break;
 					case SelectionState.Deselected:
 						fileItem.State = fileItem.Node.State == SelectionState.Unselected ? SelectionState.Unselected : SelectionState.SelectedParent;
@@ -285,7 +310,8 @@ namespace TimeVault.Forms
 						fileItem.State = SelectionState.Deselected;
 						DeselectedFiles.Add(fileItem.File.FullName);
 						break;
-				}				
+				}
+				fileItem.Node.UpdatedFile();
 			}
 		}
 	}

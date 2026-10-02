@@ -63,6 +63,9 @@ namespace TimeVault.Forms
 		}
 		#endregion
 
+		public bool IsSelectedState => State is SelectionState.Selected or SelectionState.SelectedParent;
+		public bool IsDeselectedState => State is SelectionState.Deselected or SelectionState.DeselectedParent;
+
 		private Color DefaultForeColor => State == SelectionState.Excluded ? SystemColors.GrayText : SystemColors.WindowText;
 
 		private bool _updatingState;
@@ -171,6 +174,25 @@ namespace TimeVault.Forms
 				UpdatedChild();
 			}
 			return Nodes.Count == 0;
+		}
+
+		internal void UpdatedFile()
+		{
+			if (Form.SelectedFiles.Any(f => f.StartsWith(Folder.FullName, StringComparison.CurrentCultureIgnoreCase)))
+			{
+				if (State == SelectionState.Unselected)
+				{
+					State = SelectionState.ContainsSelection;
+				}
+			}
+			else if (Form.DeselectedFiles.Any(f => f.StartsWith(Folder.FullName, StringComparison.CurrentCultureIgnoreCase)))
+			{
+				Mixed = true;
+			}
+			else if (State == SelectionState.Unselected)
+			{
+				Mixed = false;
+			}
 		}
 
 		public IEnumerable<FileInfo> Files
