@@ -105,10 +105,10 @@ namespace TimeVault.Forms
 		}
 
 		private NotifyIcon CreateTrayIcon()
-		{ 
+		{
 			var notify = new NotifyIcon
 			{
-				Icon = new Icon(GetType(), "Icons.archive-icon-icon-6.ico"),
+				Icon = new Icon(GetType(), "Icons.archive.ico"),				
 				Text = "TimeVault",
 				ContextMenuStrip = _menu,
 				Visible = true

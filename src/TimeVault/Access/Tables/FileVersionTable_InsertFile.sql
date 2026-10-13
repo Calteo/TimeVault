@@ -1,0 +1,2 @@
+﻿INSERT INTO Files (Path) VALUES (@Path)
+RETURNING Id

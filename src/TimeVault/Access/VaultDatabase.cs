@@ -12,12 +12,14 @@ namespace TimeVault.Access
 
 			Exclusions = AddTable<ExclusionTable>();
 			Selections = AddTable<SelectionTable>();
+			FileVersions = AddTable<FileVersionTable>();
 		}
 
 		public string Folder { get; }
 
 		public ExclusionTable Exclusions { get; }
 		public SelectionTable Selections { get; }
+		public FileVersionTable FileVersions { get; }
 
 		protected override void Create(VersionInfo version)
 		{

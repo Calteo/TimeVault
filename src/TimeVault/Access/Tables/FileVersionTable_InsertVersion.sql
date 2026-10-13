@@ -1,0 +1,1 @@
+﻿INSERT INTO Versions (FileId, Number, LastWrite) VALUES (@Id, @Version, @LastWrite)

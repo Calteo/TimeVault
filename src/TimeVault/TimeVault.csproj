@@ -6,26 +6,35 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>Forms\Icons\archive-icon-icon-6.ico</ApplicationIcon>    
+    <ApplicationIcon>Forms\Icons\archive.ico</ApplicationIcon>    
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Access\Tables\FileVersionTable_SelectFileVersions.sql" />
     <None Remove="Access\VaultDatabase.sql" />
+    <None Remove="Forms\Icons\pause.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Access\Tables\FileVersionTable_InsertVersion.sql" />
+    <EmbeddedResource Include="Access\Tables\FileVersionTable_InsertFile.sql" />
+    <EmbeddedResource Include="Access\Tables\FileVersionTable_SelectFileVersions.sql" />
+    <EmbeddedResource Include="Forms\Icons\archive.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Access\VaultDatabase.sql" />
-    <EmbeddedResource Include="Forms\Icons\archive-icon-icon-6.ico" />
+    <EmbeddedResource Include="Forms\Icons\pause.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Dapper" Version="2.1.86" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.12" />
+    <PackageReference Include="Dapper" Version="2.1.89" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.13" />
     <PackageReference Include="Toolbox.CommandLine" Version="1.1.13" />
     <PackageReference Include="Toolbox.Configuration" Version="0.1.2" />
     <PackageReference Include="Toolbox.Core" Version="0.6.31" />
-    <PackageReference Include="Toolbox.Dapper.SQLite" Version="0.1.20" />
-    <PackageReference Include="Toolbox.Forms" Version="0.2.11" />
+    <PackageReference Include="Toolbox.Dapper.SQLite" Version="0.1.21" />
+    <PackageReference Include="Toolbox.Forms" Version="0.4.18" />
     <PackageReference Include="Toolbox.Settings" Version="0.1.1" />
   </ItemGroup>
 
