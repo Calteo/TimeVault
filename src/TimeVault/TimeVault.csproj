@@ -12,19 +12,18 @@
   <ItemGroup>
     <None Remove="Access\Tables\FileVersionTable_SelectFileVersions.sql" />
     <None Remove="Access\VaultDatabase.sql" />
-    <None Remove="Forms\Icons\pause.ico" />
+    <None Remove="Forms\Icons\archive.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Access\Tables\FileVersionTable_InsertVersion.sql" />
     <EmbeddedResource Include="Access\Tables\FileVersionTable_InsertFile.sql" />
     <EmbeddedResource Include="Access\Tables\FileVersionTable_SelectFileVersions.sql" />
-    <EmbeddedResource Include="Forms\Icons\archive.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Access\VaultDatabase.sql" />
-    <EmbeddedResource Include="Forms\Icons\pause.ico" />
+    <EmbeddedResource Include="Forms\Icons\archive.ico" />
   </ItemGroup>
 
   <ItemGroup>

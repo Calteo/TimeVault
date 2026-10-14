@@ -35,8 +35,9 @@
 			buttonExclude = new Button();
 			buttonStartStop = new Button();
 			imageList = new ImageList(components);
-			labelFolder = new Label();
 			labelItemCount = new Label();
+			labelFolder = new Label();
+			timerProgress = new System.Windows.Forms.Timer(components);
 			layoutPanel.SuspendLayout();
 			SuspendLayout();
 			// 
@@ -58,13 +59,13 @@
 			layoutPanel.RowCount = 2;
 			layoutPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 49F));
 			layoutPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-			layoutPanel.Size = new Size(990, 215);
+			layoutPanel.Size = new Size(1057, 193);
 			layoutPanel.TabIndex = 0;
 			// 
 			// buttonFolders
 			// 
 			buttonFolders.Dock = DockStyle.Fill;
-			buttonFolders.Location = new Point(674, 4);
+			buttonFolders.Location = new Point(741, 4);
 			buttonFolders.Margin = new Padding(4);
 			buttonFolders.Name = "buttonFolders";
 			buttonFolders.Size = new Size(152, 41);
@@ -76,7 +77,7 @@
 			// buttonExclude
 			// 
 			buttonExclude.Dock = DockStyle.Fill;
-			buttonExclude.Location = new Point(834, 4);
+			buttonExclude.Location = new Point(901, 4);
 			buttonExclude.Margin = new Padding(4);
 			buttonExclude.Name = "buttonExclude";
 			buttonExclude.Size = new Size(152, 41);
@@ -105,20 +106,10 @@
 			imageList.TransparentColor = Color.Transparent;
 			imageList.Images.SetKeyName(0, "pause");
 			imageList.Images.SetKeyName(1, "play");
-			// 
-			// labelFolder
-			// 
-			labelFolder.AutoEllipsis = true;
-			labelFolder.BackColor = SystemColors.InactiveCaption;
-			labelFolder.Dock = DockStyle.Top;
-			labelFolder.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-			labelFolder.Location = new Point(0, 0);
-			labelFolder.Margin = new Padding(4, 0, 4, 0);
-			labelFolder.Name = "labelFolder";
-			labelFolder.Size = new Size(990, 40);
-			labelFolder.TabIndex = 0;
-			labelFolder.Text = "Folder";
-			labelFolder.TextAlign = ContentAlignment.MiddleLeft;
+			imageList.Images.SetKeyName(2, "progress-100");
+			imageList.Images.SetKeyName(3, "progress-0");
+			imageList.Images.SetKeyName(4, "progress-33");
+			imageList.Images.SetKeyName(5, "progress-66");
 			// 
 			// labelItemCount
 			// 
@@ -128,6 +119,28 @@
 			labelItemCount.Size = new Size(59, 25);
 			labelItemCount.TabIndex = 3;
 			labelItemCount.Text = "label1";
+			// 
+			// labelFolder
+			// 
+			labelFolder.AutoEllipsis = true;
+			labelFolder.BackColor = SystemColors.InactiveCaption;
+			labelFolder.Dock = DockStyle.Top;
+			labelFolder.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+			labelFolder.ImageAlign = ContentAlignment.MiddleRight;
+			labelFolder.ImageList = imageList;
+			labelFolder.Location = new Point(0, 0);
+			labelFolder.Margin = new Padding(4, 0, 4, 0);
+			labelFolder.Name = "labelFolder";
+			labelFolder.Size = new Size(1057, 40);
+			labelFolder.TabIndex = 0;
+			labelFolder.Text = "Folder";
+			labelFolder.TextAlign = ContentAlignment.MiddleLeft;
+			// 
+			// timerProgress
+			// 
+			timerProgress.Interval = 1000;
+			timerProgress.Tag = "";
+			timerProgress.Tick += TimerProgressTick;
 			// 
 			// VaultControl
 			// 
@@ -139,7 +152,7 @@
 			Font = new Font("Segoe UI", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
 			Margin = new Padding(12);
 			Name = "VaultControl";
-			Size = new Size(990, 255);
+			Size = new Size(1057, 233);
 			Load += VaultControlLoad;
 			layoutPanel.ResumeLayout(false);
 			layoutPanel.PerformLayout();
@@ -155,5 +168,6 @@
 		private Button buttonStartStop;
 		private ImageList imageList;
 		private Label labelItemCount;
+		private System.Windows.Forms.Timer timerProgress;
 	}
 }
