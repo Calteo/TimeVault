@@ -1,1 +1,1 @@
-﻿INSERT INTO Versions (FileId, Number, LastWrite) VALUES (@Id, @Version, @LastWrite)
+﻿INSERT INTO FileVersions (FileId, Number, LastWrite, Stored) VALUES (@Id, @Version, @LastWrite, @Stored)

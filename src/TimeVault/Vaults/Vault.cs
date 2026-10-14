@@ -215,6 +215,7 @@ internal class Vault
 
 		fileVersion.Version = version;
 		fileVersion.LastWrite = fileInfo.LastWriteTimeUtc;
+		fileVersion.Stored = DateTime.UtcNow;
 
 		Database.FileVersions.Insert(fileVersion);
 	}
@@ -227,7 +228,6 @@ internal class Vault
 		if (!Directory.Exists(directory))
 			Directory.CreateDirectory(directory!);
 
-		filePath = Path.Combine(directory!, $"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.v{version}{fileInfo.Extension}");
-		return filePath;
+		return Path.Combine(directory!, $"{Path.GetFileNameWithoutExtension(fileInfo.Name)}.{version}{fileInfo.Extension}");
 	}
 }

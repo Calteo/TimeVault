@@ -7,5 +7,6 @@ namespace TimeVault.Access.Models
 		public string Path { get; set; } = "";
 		public int Version { get; set; }
 		public DateTime LastWrite { get; set; }
+		public DateTime Stored { get; set; }
 	}
 }

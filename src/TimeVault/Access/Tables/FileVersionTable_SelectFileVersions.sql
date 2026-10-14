@@ -5,7 +5,7 @@
             PARTITION BY v.FileId
             ORDER BY v.LastWrite DESC, v.Number DESC
         ) AS rn
-    FROM Versions v
+    FROM FileVersions v
 )
 SELECT
     f.Id AS Id,
